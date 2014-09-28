@@ -24,16 +24,20 @@ def login():
 	error = None
 	if session.get("logged_in"):
 		return redirect(url_for("tickets"))
-	else:
-		if request.method == "POST":
-			if request.form["password"] == user_db.search(where('username') == request.form["username"])[0]["password"]:
-				session["logged_in"] = True
-				return redirect(url_for("tickets"))
-			else:
-				error = "No such Username or Password"
-				return render_template("login.html", error=error)
-		elif request.method == "GET":
-			return render_template("login.html")
+        if request.method == "POST":
+            try:
+                users = user_db.search(where('username') == request.form["username"])[0]["password"]
+            except:
+                error = "No such Username or Password"
+                return render_template("login.html", error=error)
+            if request.form["password"] == users:
+                session["logged_in"] = True
+                return redirect(url_for("tickets"))
+            else:
+                error = "No such Username or Password"
+                return render_template("login.html", error=error)
+        elif request.method == "GET":
+            return render_template("login.html")
 
 @app.route("/logout")
 def logout():
@@ -69,9 +73,6 @@ def user(userid):
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
-
-
-
 
 if __name__ == "__main__":
 	app.run()
