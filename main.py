@@ -32,6 +32,7 @@ def login():
                 return render_template("login.html", error=error)
             if request.form["password"] == users:
                 session["logged_in"] = True
+                session["username"] = request.form["username"]
                 return redirect(url_for("tickets"))
             else:
                 error = "No such Username or Password"
@@ -61,11 +62,17 @@ def ticket_detail(ticket_id):
 	if not session.get("logged_in"):
 		return redirect(url_for("login"))
 	else:
-		results = ticket_db.search(where("uuid") == ticket_id)
-		if len(results) == 0:
-			abort(404)
-		else:
-			return render_template("ticket_detail.html", details=ticket_db[0])
+        if request.method == "GET":
+    		results = ticket_db.search(where("uuid") == ticket_id)
+    		if len(results) == 0:
+    			abort(404)
+    		else:
+    			return render_template("ticket_detail.html", details=ticket_db[0])
+        else:
+            content = request.form["content"].replace("\n", "<br>")
+            user = session.get("username")
+            ticket_to_edit = ticket_db.search(where('uuid') == ticket_id)["replies"].append({"author":user, "content":content})
+            return redirect(url_for("ticket")+"/"+ticket_id)
 @app.route("/user/<userid>")
 def user(userid):
 	return render_template("unimplemented.html")
