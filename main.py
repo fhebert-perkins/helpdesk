@@ -59,15 +59,15 @@ def tickets():
 		return render_template("tickets.html", to_display=to_display)
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
 def ticket_detail(ticket_id):
-	if not session.get("logged_in"):
-		return redirect(url_for("login"))
-	else:
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
         if request.method == "GET":
-    		results = ticket_db.search(where("uuid") == ticket_id)
-    		if len(results) == 0:
-    			abort(404)
-    		else:
-    			return render_template("ticket_detail.html", details=ticket_db[0])
+            results = ticket_db.search(where("uuid") == ticket_id)
+            if len(results) == 0:
+                abort(404)
+            else:
+                return render_template("ticket_detail.html", details=results[0])
         else:
             content = request.form["content"].replace("\n", "<br>")
             user = session.get("username")
