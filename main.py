@@ -2,6 +2,7 @@ from flask import Flask, redirect, session, url_for, render_template, request, a
 from tinydb import TinyDB, where
 from uuid import uuid4
 from hashlib import md5
+from os import urandom
 
 user_db = TinyDB('dbs/users.json')
 ticket_db = TinyDB('dbs/tickets.json')
@@ -9,7 +10,7 @@ app = Flask(__name__)
 
 app.config.update(
     DEBUG=True,
-    SECRET_KEY='imaderpybird12345'
+    SECRET_KEY=urandom(16)
 )
 
 
@@ -64,16 +65,24 @@ def ticket_detail(ticket_id):
     else:
         if request.method == "GET":
             results = ticket_db.search(where("uuid") == ticket_id)
-            action_url = url_for("ticket_detail")+"/"+ticket_id
+            action_url = request.path
             if len(results) == 0:
                 abort(404)
             else:
-                return render_template("ticket_detail.html", details=results[0])
+                return render_template("ticket_detail.html", details=results[0], actionurl=action_url)
         else:
             content = request.form["content"].replace("\n", "<br>")
             user = session.get("username")
-            ticket_to_edit = ticket_db.search(where('uuid') == ticket_id)["replies"].append({"author":user, "content":content})
-            return redirect(url_for("ticket")+"/"+ticket_id)
+            t = ticket_db.get(where('uuid') == ticket_id)
+            replies = t["replies"].append({"content" : content, "author": user})
+            ticket_db.({"replies" : replies}, eids=[t.eid])
+            return redirect(request.path)
+@app.route("/new", methods =["POST", "GET"])
+def new_ticket():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
+        return render_template("unimplemented.html")
 @app.route("/user/<userid>")
 def user(userid):
 	return render_template("unimplemented.html")
