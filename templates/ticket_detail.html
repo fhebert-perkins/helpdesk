@@ -11,7 +11,7 @@
 	</div>
 	{% for reply in details.replies %}
 	<div class="well">
-		reply.content <span>-reply.author</span>
+		<p>reply.content</p><span>-reply.author</span>
 	</div>
 	{% endfor %}
 	<form  action="{{ url_for('ticket_detail')+'/'+ticket.uuid }}" method="post">

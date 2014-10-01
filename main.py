@@ -64,6 +64,7 @@ def ticket_detail(ticket_id):
     else:
         if request.method == "GET":
             results = ticket_db.search(where("uuid") == ticket_id)
+            action_url = url_for("ticket_detail")+"/"+ticket_id
             if len(results) == 0:
                 abort(404)
             else:
