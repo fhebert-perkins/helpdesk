@@ -69,6 +69,13 @@ def tickdet_detail(ticket_id):
         if request.method == "GET":
             results = ticket_db.search(where("uuid") == ticket_id)
             action_url = request.path
+            status = int(request.args.get("status", 10))
+            if status < 0 or status > 3:
+                pass
+            else:
+                t = ticket_db.get(where('uuid') == ticket_id)
+                t["status"] = status
+                ticket_db.update(t, eids=[t.eid])
             if len(results) == 0:
                 abort(404)
             else:
@@ -77,8 +84,10 @@ def tickdet_detail(ticket_id):
             content = request.form["content"].replace("\n", "<br>")
             user = session.get("username")
             t = ticket_db.get(where('uuid') == ticket_id)
-            replies = t["replies"].append({"content" : content, "author": user})
-            ticket_db.update({"replies" : replies}, eids=[t.eid])
+            if t["replies"] == None:
+                t["replies"] = []
+            t["replies"].append({"content" : content, "author": user})
+            ticket_db.update(t, eids=[t.eid])
             return redirect(request.path)
 
 @app.route("/new", methods =["POST", "GET"])
