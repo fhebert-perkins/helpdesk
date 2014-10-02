@@ -62,7 +62,7 @@ def tickets():
 		return render_template("tickets.html", to_display=to_display)
 
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
-def ticket_detail(ticket_id):
+def tickdet_detail(ticket_id):
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
@@ -78,7 +78,7 @@ def ticket_detail(ticket_id):
             user = session.get("username")
             t = ticket_db.get(where('uuid') == ticket_id)
             replies = t["replies"].append({"content" : content, "author": user})
-            ticket_db.insert({"replies" : replies}, eids=[t.eid])
+            ticket_db.update({"replies" : replies}, eids=[t.eid])
             return redirect(request.path)
 
 @app.route("/new", methods =["POST", "GET"])
@@ -97,7 +97,10 @@ def user():
 
 @app.route("/user/<userid>")
 def view_user(userid):
-	return render_template("unimplemented.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
+	       return render_template("unimplemented.html")
 
 # ERROR HANLDERS
 @app.errorhandler(404)
