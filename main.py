@@ -20,6 +20,7 @@ def main():
 		return redirect(url_for("tickets"))
 	else:
 		return redirect(url_for("login"))
+
 @app.route("/login", methods = ["POST", "GET"])
 def login():
 	error = None
@@ -48,6 +49,7 @@ def logout():
 		return redirect(url_for("login"))
 	else:
 		return redirect(url_for("login"))
+
 @app.route("/tickets", methods = ["GET"])
 def tickets():
 	if not session.get("logged_in"):
@@ -58,6 +60,7 @@ def tickets():
 		for i in to_display:
 			i["userid"] = md5(i["email"]).hexdigest()
 		return render_template("tickets.html", to_display=to_display)
+
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
 def ticket_detail(ticket_id):
     if not session.get("logged_in"):
@@ -75,17 +78,27 @@ def ticket_detail(ticket_id):
             user = session.get("username")
             t = ticket_db.get(where('uuid') == ticket_id)
             replies = t["replies"].append({"content" : content, "author": user})
-            ticket_db.({"replies" : replies}, eids=[t.eid])
+            ticket_db.insert({"replies" : replies}, eids=[t.eid])
             return redirect(request.path)
+
 @app.route("/new", methods =["POST", "GET"])
 def new_ticket():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
         return render_template("unimplemented.html")
+
+@app.route("/user")
+def user():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
+        return redirect(url_for("tickets"))
+
 @app.route("/user/<userid>")
-def user(userid):
+def view_user(userid):
 	return render_template("unimplemented.html")
+
 # ERROR HANLDERS
 @app.errorhandler(404)
 def page_not_found(e):
