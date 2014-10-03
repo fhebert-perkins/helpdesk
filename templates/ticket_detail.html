@@ -1,10 +1,7 @@
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap-theme.min.css">
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+{% extends "template.html" %}
 <div class="col-md-12">
 	<div class="panel panel-default">
-		<div class="panel-heading">
+		<div class="panel-heading" style="height:55px">
 			<span class="text-left">{{ details.title }}</span>
 			{{ '(' }}<small>{{ details.email }}</small>{{ ')' }}
 			<div class="btn-group pull-right">
@@ -20,7 +17,7 @@
 					</button>
 				{% elif details.status == 2 %}
 					<button type="button" class="btn btn-warning dropdown-toggle" data-toggle="dropdown">
-						Unresolve
+						Unresolved
 					<span class="caret"></span>
 					</button>
 				{% elif details.status == 3 %}
@@ -59,27 +56,31 @@
 				{% endif %}
 			  </ul>
 			</div>
+			<br>
 		</div>
 	</div>
 		<div class="panel-body">
-			{{ details.text }}
+			<p>{{ details.text }}</p>
+			<ul class="list-group">
+			{% if not details.replies == None %}
+				{% for reply in details.replies %}
+				<il class="list-group-item">
+					<p>{{ reply.content|safe }}</p><span>-{{ reply.author }}</span>
+				</il>
+				{% endfor %}
+			{% else %}
+				<il class="list-group-item">
+					<h1>Nothing Here Yet</h1>
+				</il>
+			{% endif %}
+				<il class="list-group-item">
+					<form  action="{{ actionurl }}" method="post">
+						<textarea name="content" class="form-control" rows="3" required></textarea>
+						<button type="submit" class="btn btn-default">Submit response</button>
+					</form>
+				</il>
+			</ul>
 		</div>
-		<ul>
-		{% if not details.replies == None %}
-			{% for reply in details.replies %}
-			<div class="well">
-				<p>{{ reply.content }}</p><span>-{{ reply.author }}</span>
-			</div>
-			{% endfor %}
-		{% else %}
-		 <div class="well">
-				<h1>Nothing Here Yet</h1>
-			</div>
-		{% endif %}
-		</ul>
-		<form  action="{{ actionurl }}" method="post">
-			<textarea name="content" class="form-control" rows="3" required></textarea>
-			<button type="submit" class="btn btn-default">Submit response</button>
-		</form>
 	</div>
 </div>
+{% endblock %}
