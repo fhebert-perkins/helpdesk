@@ -14,6 +14,10 @@ app.config.update(
     SECRET_KEY=urandom(24)
 )
 
+@app.context_processor
+def inject_user():
+    return dict(pending=str(len(ticket_db.search(where("status") == 0))))
+
 @app.route("/")
 def main():
 	if session.get("logged_in"):
@@ -56,15 +60,15 @@ def logout():
 
 @app.route("/tickets", methods = ["GET"])
 def tickets():
-	if not session.get("logged_in"):
-		return redirect(url_for("login"))
-	else:
-		page = int(request.args.get("page", 1))
-		to_display = ticket_db.all()[((10*page)-10):(10*page)+10]
-		for i in to_display:
-			i["userid"] = md5(i["email"]).hexdigest()
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
+        page = int(request.args.get("page", 0))
+        to_display = ticket_db.all()[10*page:(10*page)+10]
+        for i in to_display:
+            i["userid"] = md5(i["email"]).hexdigest()
         to_display = sorted(to_display, key=lambda k: k['time'], reverse=True)
-        return render_template("tickets.html", to_display=to_display)
+        return render_template("tickets.html", to_display=to_display, page=page)
 
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
 def ticket_detail(ticket_id):
@@ -84,6 +88,7 @@ def ticket_detail(ticket_id):
             if len(results) == 0:
                 abort(404)
             else:
+                results[0]["text"].replace("\;", ";")
                 return render_template("ticket_detail.html", details=results[0], actionurl=action_url)
         else:
             content = request.form["content"].replace("\n", "<br>")
@@ -103,7 +108,7 @@ def new_ticket():
         if request.method == "POST":
             user = request.form["email"]
             title = request.form["title"]
-            content = request.form["content"]
+            content = request.form["content"].replace("\n", "<br>").replace(";", "\;")
             ticket_id = uuid4().hex
             time = strftime("%m-%d-%Y %H:%M", localtime())
             ticket_db.insert({"email" : user, "title":title, "text":content,"uuid":ticket_id, "time":time, "status":0, "replies":[]})
@@ -138,6 +143,7 @@ def account():
 @app.route("/settings")
 def settings():
     return render_template("unimplemented.html")
+
 # ERROR HANLDERS
 @app.errorhandler(404)
 def page_not_found(e):

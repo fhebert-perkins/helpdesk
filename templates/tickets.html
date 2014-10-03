@@ -29,4 +29,10 @@
 		{% endfor %}
 	</tbody>
 </table>
+<ul class="pager">
+	{% if page != 0%}
+		<li class="previous"><a href="{{ url_for('tickets') }}?page={{ page-1 }}">&larr; Older</a></li>
+	{% endif %}
+	<li class="next"><a href="{{ url_for('tickets') }}?page={{ page+1 }}">Newer &rarr;</a></li>
+</ul>
 {% endblock %}
