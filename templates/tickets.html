@@ -3,7 +3,7 @@
 <table class="table table-striped">
 	<thead>
 		<tr>
-			<td>Date</td><td>Title</td><td>User</td><td>Status</td>
+			<td>Date</td><td>Title</td><td>User</td><td>Severity</td><td>Status</td>
 	</thead>
 	<tbody>
 		{% for ticket in to_display %}
@@ -12,8 +12,19 @@
 				<td><a href="/ticket/{{ ticket.uuid }}">{{ ticket.title }}</a></td>
 				<td><a href="/user/{{ ticket.userid }}">{{ ticket.email }}</a></td>
 				<td>
+					{% if ticket.severity == 1 %}
+						<span class="label label-danger" >Urgent</span>
+					{% elif ticket.severity == 2 %}
+						<span class="label label-primary">High</span>
+					{% elif ticket.severity == 3 %}
+						<span class="label label-warning">Low</span>
+					{% else %}
+						<span class="label label-default">Unknown</span>
+					{% endif %}
+				</td>
+				<td>
 					{% if ticket.status == 0 %}
-						<span class="label label-danger">Pending</span>
+						<span class="label label-danger" >Pending</span>
 					{% elif ticket.status == 1 %}
 						<span class="label label-primary">In Progress</span>
 					{% elif ticket.status == 2 %}
@@ -31,8 +42,8 @@
 </table>
 <ul class="pager">
 	{% if page != 0%}
-		<li class="previous"><a href="{{ url_for('tickets') }}?page={{ page-1 }}">&larr; Older</a></li>
+		<li class="previous"><a href="{{ url_for('tickets') }}?page={{ page-1 }}">&larr; Newer</a></li>
 	{% endif %}
-	<li class="next"><a href="{{ url_for('tickets') }}?page={{ page+1 }}">Newer &rarr;</a></li>
+	<li class="next"><a href="{{ url_for('tickets') }}?page={{ page+1 }}">Older &rarr;</a></li>
 </ul>
 {% endblock %}

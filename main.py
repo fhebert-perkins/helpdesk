@@ -1,7 +1,7 @@
 from flask import Flask, redirect, session, url_for, render_template, request, abort
 from tinydb import TinyDB, where
 from uuid import uuid4
-from hashlib import md5
+from hashlib import md5, sha224
 from os import urandom
 from time import localtime, strftime, time
 
@@ -13,7 +13,6 @@ app.config.update(
     DEBUG=True,
     SECRET_KEY=urandom(24)
 )
-
 @app.context_processor
 def inject_user():
     return dict(pending=str(len(ticket_db.search(where("status") == 0))))
@@ -64,7 +63,7 @@ def tickets():
         return redirect(url_for("login"))
     else:
         page = int(request.args.get("page", 0))
-        to_display = ticket_db.all()[10*page:(10*page)+10]
+        to_display = ticket_db.all()[25*page:(25*page)+25]
         for i in to_display:
             i["userid"] = md5(i["email"]).hexdigest()
         to_display = sorted(to_display, key=lambda k: k['time'], reverse=True)
@@ -110,8 +109,9 @@ def new_ticket():
             title = request.form["title"]
             content = request.form["content"].replace("\n", "<br>").replace(";", "\;")
             ticket_id = uuid4().hex
+            severity = int(request.form["severity"])
             time = strftime("%m-%d-%Y %H:%M", localtime())
-            ticket_db.insert({"email" : user, "title":title, "text":content,"uuid":ticket_id, "time":time, "status":0, "replies":[]})
+            ticket_db.insert({"severity" : severity, "email" : user, "title":title, "text":content,"uuid":ticket_id, "time":time, "status":0, "replies":[]})
             redirect_url = url_for("ticket_detail", ticket_id=ticket_id)
             return redirect(redirect_url)
         else:
