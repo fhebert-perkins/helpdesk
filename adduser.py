@@ -3,5 +3,6 @@ password = raw_input("password: ")
 email = raw_input("email: ")
 from tinydb import TinyDB
 db = TinyDB("dbs/users.json")
-db.insert({"username" : username, "password" : password, "email" : email, "permission" : 0})
+from hashlib import md5
+db.insert({"username" : username, "password" : password, "email" : email, "permission" : 0, "posts":0, "user_id": md5(email).hexdigest()})
 print "added", username

@@ -3,7 +3,7 @@ from tinydb import TinyDB, where
 from uuid import uuid4
 from hashlib import md5
 from os import urandom
-from time import localtime, strftime
+from time import localtime, strftime, time
 
 user_db = TinyDB('dbs/users.json')
 ticket_db = TinyDB('dbs/tickets.json')
@@ -11,9 +11,9 @@ app = Flask(__name__)
 
 app.config.update(
     DEBUG=True,
-    SECRET_KEY=urandom(16),
-    PENDING=len(ticket_db.search(where('status') == 0))
+    SECRET_KEY=urandom(24)
 )
+
 @app.route("/")
 def main():
 	if session.get("logged_in"):
@@ -35,6 +35,10 @@ def login():
             if request.form["password"] == users:
                 session["logged_in"] = True
                 session["username"] = request.form["username"]
+                t = user_db.get(where('username') == request.form["username"])
+                t["last_login"] = time()
+                session["email"] = t["email"]
+                user_db.update(t, eids=[t.eid])
                 return redirect(url_for("tickets"))
             else:
                 error = "No such Username or Password"
@@ -59,7 +63,7 @@ def tickets():
 		to_display = ticket_db.all()[((10*page)-10):(10*page)+10]
 		for i in to_display:
 			i["userid"] = md5(i["email"]).hexdigest()
-        to_display = sorted(to_display, key=lambda k: k['time'])
+        to_display = sorted(to_display, key=lambda k: k['time'], reverse=True)
         return render_template("tickets.html", to_display=to_display)
 
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
@@ -119,8 +123,21 @@ def view_user(userid):
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
-	       return render_template("unimplemented.html")
+        user = user_db.get(where('user_id') == userid)
+        if len(user) < 0:
+            abort(404)
+        else:
+            tickets = user_db.search(where('author') == user["email"])
+            user["tickets"] = tickets
+            user["posts"] = len(tickets)
+            return render_template("user.html", user=user)
+@app.route("/account")
+def account():
+    return redirect(url_for("view_user" , userid=md5(session.get("email")).hexdigest()))
 
+@app.route("/settings")
+def settings():
+    return render_template("unimplemented.html")
 # ERROR HANLDERS
 @app.errorhandler(404)
 def page_not_found(e):
