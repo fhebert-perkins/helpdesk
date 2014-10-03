@@ -1,3 +1,18 @@
 {% extends "template.html" %}
 {% block body %}
+<form class="col-md-12" action="{{ url_for('new_ticket') }}" method="post">
+	<div class="form-group">
+		<label for="Email">Email address</label>
+		<input type="email" class="form-control" id="email" name="email" placeholder="User email" required>
+	</div>
+	<div class="form-group">
+		<label for="Title">Title</label>
+		<input type="text" class="form-control" id="title" name="title" placeholder="Post title" required>
+	</div>
+	<div class="form-group">
+		<label for="text">Text</label>
+		<textarea id="text" name="content" class="form-control" rows="3" required></textarea>
+	</div>
+	<button type="submit" class="btn btn-default">Submit</button>
+</form>
 {% endblock %}

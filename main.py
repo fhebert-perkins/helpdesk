@@ -3,6 +3,7 @@ from tinydb import TinyDB, where
 from uuid import uuid4
 from hashlib import md5
 from os import urandom
+from time import localtime, strftime
 
 user_db = TinyDB('dbs/users.json')
 ticket_db = TinyDB('dbs/tickets.json')
@@ -10,10 +11,9 @@ app = Flask(__name__)
 
 app.config.update(
     DEBUG=True,
-    SECRET_KEY=urandom(16)
+    SECRET_KEY=urandom(16),
+    PENDING=len(ticket_db.search(where('status') == 0))
 )
-
-
 @app.route("/")
 def main():
 	if session.get("logged_in"):
@@ -55,14 +55,15 @@ def tickets():
 	if not session.get("logged_in"):
 		return redirect(url_for("login"))
 	else:
-		page = int(request.args.get("page", 0))
-		to_display = ticket_db.all()[((25*page)-25):(25*page)+25]
+		page = int(request.args.get("page", 1))
+		to_display = ticket_db.all()[((10*page)-10):(10*page)+10]
 		for i in to_display:
 			i["userid"] = md5(i["email"]).hexdigest()
-		return render_template("tickets.html", to_display=to_display)
+        to_display = sorted(to_display, key=lambda k: k['time'])
+        return render_template("tickets.html", to_display=to_display)
 
 @app.route("/ticket/<ticket_id>", methods=["POST","GET"])
-def tickdet_detail(ticket_id):
+def ticket_detail(ticket_id):
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
@@ -95,8 +96,17 @@ def new_ticket():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
-        return render_template("unimplemented.html")
-
+        if request.method == "POST":
+            user = request.form["email"]
+            title = request.form["title"]
+            content = request.form["content"]
+            ticket_id = uuid4().hex
+            time = strftime("%m-%d-%Y %H:%M", localtime())
+            ticket_db.insert({"email" : user, "title":title, "text":content,"uuid":ticket_id, "time":time, "status":0, "replies":[]})
+            redirect_url = url_for("ticket_detail", ticket_id=ticket_id)
+            return redirect(redirect_url)
+        else:
+            return render_template("newticket.html")
 @app.route("/user")
 def user():
     if not session.get("logged_in"):
