@@ -1,7 +1,7 @@
 from flask import Flask, redirect, session, url_for, render_template, request, abort
 from tinydb import TinyDB, where
 from uuid import uuid4
-from hashlib import md5, sha224
+from hashlib import md5
 from os import urandom
 from time import localtime, strftime, time
 
@@ -30,12 +30,13 @@ def login():
 	if session.get("logged_in"):
 		return redirect(url_for("tickets"))
         if request.method == "POST":
+            user = user_db.search(where('username') == request.form["username"])[0]
             try:
-                users = user_db.search(where('username') == request.form["username"])[0]["password"]
+                user = user_db.search(where('username') == request.form["username"])[0]
             except:
                 error = "No such Username or Password"
                 return render_template("login.html", error=error)
-            if request.form["password"] == users:
+            if md5(request.form["password"]).hexdigest() == user["password"]:
                 session["logged_in"] = True
                 session["username"] = request.form["username"]
                 t = user_db.get(where('username') == request.form["username"])

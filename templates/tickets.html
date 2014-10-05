@@ -13,26 +13,26 @@
 				<td><a href="/user/{{ ticket.userid }}">{{ ticket.email }}</a></td>
 				<td>
 					{% if ticket.severity == 1 %}
-						<span class="label label-danger" >Urgent</span>
+						<span class="label label-danger severity" >Urgent</span>
 					{% elif ticket.severity == 2 %}
-						<span class="label label-primary">High</span>
+						<span class="label label-primary severity">High</span>
 					{% elif ticket.severity == 3 %}
-						<span class="label label-warning">Low</span>
+						<span class="label label-warning severity">Low</span>
 					{% else %}
-						<span class="label label-default">Unknown</span>
+						<span class="label label-default severity">Unknown</span>
 					{% endif %}
 				</td>
 				<td>
 					{% if ticket.status == 0 %}
-						<span class="label label-danger" >Pending</span>
+						<span class="label label-danger status" >Pending</span>
 					{% elif ticket.status == 1 %}
-						<span class="label label-primary">In Progress</span>
+						<span class="label label-primary status">In Progress</span>
 					{% elif ticket.status == 2 %}
-						<span class="label label-warning">Unresolved</span>
+						<span class="label label-warning status">Unresolved</span>
 					{% elif ticket.status == 3 %}
-						<span class="label label-success">Resolved</span>
+						<span class="label label-success status">Resolved</span>
 					{% else %}
-						<span class="label label-default">Unknown</span>
+						<span class="label label-default status">Unknown</span>
 					{% endif %}
 				</td>
 			</tr>

@@ -1,5 +1,7 @@
 {
 	"mail_refresh_time" : 300,
 	"mail_username" : "support@mycompany.com",
-	"mail_password" : "mail_password"
+	"mail_password" : "mail_password",
+	"mail_server" : "mail@mycompany.com",
+	"VIP" : []
 }
