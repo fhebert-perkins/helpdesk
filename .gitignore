@@ -56,4 +56,5 @@ target/
 #venv
 venv/
 dbs/
+logs/
 config.json

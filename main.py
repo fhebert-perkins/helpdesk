@@ -161,14 +161,6 @@ def settings():
             elif request.form["submit"] == "add_vip":
                 vip_db.insert({"email": request.form["email"], "reason":request.form["reason"]})
                 return redirect(url_for("settings"))
-            elif request.form["submit"] == "add_admin":
-                user = user_db.search(where("username") == request.form["username"])
-                user_db.update({"permissions" : 1}, eids=[user.eid])
-                return redirect(url_for("settings"))
-            elif request.form["submit"] == "delete_admin":
-                user = user_db.search(where("username") == request.form["username"])
-                user_db.update({"permissions" : 0}, eids=[user.eid])
-                return redirect(url_for("settings"))
             else:
                 return redirect(url_for("settings"))
         else:
@@ -177,7 +169,7 @@ def settings():
 # ERROR HANLDERS
 @app.errorhandler(404)
 def page_not_found(e):
+    
     return render_template('404.html'), 404
-
 if __name__ == "__main__":
 	app.run()
