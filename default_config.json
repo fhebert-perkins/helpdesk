@@ -3,7 +3,6 @@
 	"mail_username" : "support@mycompany.com",
 	"mail_password" : "mail_password",
 	"mail_server" : "mail@mycompany.com",
-	"mail_unprocessed_mailbox" : "INBOX",
-	"mail_processed_mailbox" : "DONE",
-	"VIP" : []
+	"mail_mailbox" : "INBOX",
+	"vips" : []
 }
