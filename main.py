@@ -1,4 +1,4 @@
-from flask import Flask, redirect, session, url_for, render_template, request, abort
+from flask import Flask, redirect, session, url_for, render_template, request, abort, g
 from tinydb import TinyDB, where
 from uuid import uuid4
 from hashlib import md5
@@ -7,15 +7,19 @@ from time import localtime, strftime, time
 
 user_db = TinyDB('dbs/users.json')
 ticket_db = TinyDB('dbs/tickets.json')
+vip_db = TinyDB("dbs/vips.json")
 app = Flask(__name__)
 
 app.config.update(
     DEBUG=True,
     SECRET_KEY=urandom(24)
 )
+@app.before_request
+def before_request():
+    g.pending = dict(pending=str(len(ticket_db.search(where("status") == 0))))
 @app.context_processor
 def inject_user():
-    return dict(pending=str(len(ticket_db.search(where("status") == 0))))
+    return g.pending
 
 @app.route("/")
 def main():
@@ -30,7 +34,7 @@ def login():
 	if session.get("logged_in"):
 		return redirect(url_for("tickets"))
         if request.method == "POST":
-            user = user_db.search(where('username') == request.form["username"])[0]
+            # user = user_db.search(where('username') == request.form["username"])[0]
             try:
                 user = user_db.search(where('username') == request.form["username"])[0]
             except:
@@ -141,9 +145,34 @@ def view_user(userid):
 def account():
     return redirect(url_for("view_user" , userid=md5(session.get("email")).hexdigest()))
 
-@app.route("/settings")
+@app.route("/settings", methods=["POST", "GET"])
 def settings():
-    return render_template("unimplemented.html")
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    request_user = user_db.get(where('username') == session["username"])
+    if request_user["permission"] == 1:
+        if request.method == "GET":
+            vips = vip_db.all()
+            return render_template("admin_settings.html", vips=vips, admins=admins )
+        if request.method == "POST":
+            if request.form["submit"] == "delete_vip":
+                vip_db.remove([vip_db.get(where("email") == request.form["email"]).eid])
+                return redirect(url_for("settings"))
+            elif request.form["submit"] == "add_vip":
+                vip_db.insert({"email": request.form["email"], "reason":request.form["reason"]})
+                return redirect(url_for("settings"))
+            elif request.form["submit"] == "add_admin":
+                user = user_db.search(where("username") == request.form["username"])
+                user_db.update({"permissions" : 1}, eids=[user.eid])
+                return redirect(url_for("settings"))
+            elif request.form["submit"] == "delete_admin":
+                user = user_db.search(where("username") == request.form["username"])
+                user_db.update({"permissions" : 0}, eids=[user.eid])
+                return redirect(url_for("settings"))
+            else:
+                return redirect(url_for("settings"))
+        else:
+            return render_template("settings.html")
 
 # ERROR HANLDERS
 @app.errorhandler(404)
