@@ -1,10 +1,12 @@
-h1. HelpDesk
+# HelpDesk
+
 
 Simple helpdesk written in flask whose ticket interface is email. Not entirely meant for production.
 
 *this is by no means done. Use at your own risk*
 
-h2. Installation
+## Installation
+
 
 clone the repository
 
@@ -31,7 +33,7 @@ to run he webservice run main.py
 
 to run startup mail first edit config.json and then run maildaemon.py
 
-h2. License (MIT)
+## License (MIT)
 
 Copyright (c) 2012 Finley Hebert-Perkins
 
