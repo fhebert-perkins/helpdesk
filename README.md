@@ -2,25 +2,30 @@ h1. HelpDesk
 
 Simple helpdesk written in flask whose ticket interface is email. Not entirely meant for production.
 
-*this is by no means done. Use at your own risk
+*this is by no means done. Use at your own risk*
 
 h2. Installation
 
 clone the repository
 
-bc. git clone https://github.com/fhebert-perkins/helpdesk
+```
+git clone https://github.com/fhebert-perkins/helpdesk
+```
 
 cd into the directory
 
-bc. cd helpdesk
-
+```
+cd helpdesk
+```
 create a virtual env and run setup.py this will install the missing requirements
 
-bc. virtualenv venv
-bc. source venv/bin/activate
-bc. python setup.py
+```
+virtualenv venv
+source venv/bin/activate
+python setup.py
+```
 
-*for setup.py to work pip must be installed
+*for setup.py to work pip must be installed*
 
 to run he webservice run main.py
 
