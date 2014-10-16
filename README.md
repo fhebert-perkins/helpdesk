@@ -1,9 +1,9 @@
 # HelpDesk
 
 
-Simple helpdesk written in flask whose ticket interface is email. Not entirely meant for production.
+Simple helpdesk written in flask whose client interface is email. Not entirely meant for production.
 
-*this is by no means done. Use at your own risk*
+*This is by no means done. Use at your own risk*
 
 ## Installation
 

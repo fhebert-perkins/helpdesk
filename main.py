@@ -153,12 +153,20 @@ def settings():
     if request_user["permission"] == 1:
         if request.method == "GET":
             vips = vip_db.all()
-            return render_template("admin_settings.html", vips=vips, admins=admins )
+            return render_template("admin_settings.html", vips=vips)
         if request.method == "POST":
             if request.form["submit"] == "delete_vip":
-                vip_db.remove([vip_db.get(where("email") == request.form["email"]).eid])
+                email = request.form["vip_email"]
+                #return redirect(url_for("settings"))
+                eid = vip_db.get(where("email") == email).eid
+                vip_db.remove(eids=[eid])
                 return redirect(url_for("settings"))
             elif request.form["submit"] == "add_vip":
+                try:
+                    vip_db.get(where("email") == request.form["email"])
+                    return redirect(url_for("settings"))
+                except:
+                    pass
                 vip_db.insert({"email": request.form["email"], "reason":request.form["reason"]})
                 return redirect(url_for("settings"))
             else:
