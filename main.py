@@ -14,9 +14,16 @@ app.config.update(
     DEBUG=True,
     SECRET_KEY=urandom(24)
 )
+
+def search_function(title, author, query):
+    if title == None:
+        return query.lower() in author
+    return query.lower() in title or query.lower() in author.lower()
+
+
 @app.before_request
 def before_request():
-    g.pending = dict(pending=str(len(ticket_db.search(where("status") == 0))))
+    g.pending = dict(pending=ticket_db.count(where("status") == 0))
 @app.context_processor
 def inject_user():
     return g.pending
@@ -61,14 +68,24 @@ def logout():
 		return redirect(url_for("login"))
 	else:
 		return redirect(url_for("login"))
-
+@app.route("/archive", methods=["GET"])
+def archive():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    else:
+        page = int(request.args.get("page", 0))
+        to_display = ticket_db.search(where("status") == 3)[10*page:(10*page)+10]
+        for i in to_display:
+            i["userid"] = md5(i["email"]).hexdigest()
+        to_display = sorted(to_display, key=lambda k: k['time'], reverse=True)
+        return render_template("tickets.html", to_display=to_display, page=page)
 @app.route("/tickets", methods = ["GET"])
 def tickets():
     if not session.get("logged_in"):
         return redirect(url_for("login"))
     else:
         page = int(request.args.get("page", 0))
-        to_display = ticket_db.all()[25*page:(25*page)+25]
+        to_display = ticket_db.search(where("status") != 3)[10*page:(10*page)+10]
         for i in to_display:
             i["userid"] = md5(i["email"]).hexdigest()
         to_display = sorted(to_display, key=lambda k: k['time'], reverse=True)
@@ -157,23 +174,29 @@ def settings():
         if request.method == "POST":
             if request.form["submit"] == "delete_vip":
                 email = request.form["vip_email"]
-                #return redirect(url_for("settings"))
                 eid = vip_db.get(where("email") == email).eid
                 vip_db.remove(eids=[eid])
                 return redirect(url_for("settings"))
             elif request.form["submit"] == "add_vip":
-                try:
-                    vip_db.get(where("email") == request.form["email"])
-                    return redirect(url_for("settings"))
-                except:
-                    pass
                 vip_db.insert({"email": request.form["email"], "reason":request.form["reason"]})
                 return redirect(url_for("settings"))
             else:
                 return redirect(url_for("settings"))
         else:
             return render_template("settings.html")
-
+@app.route("/search")
+def search():
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
+    to_display = []
+    search_query = request.args.get("q", None)
+    page = int(request.args.get("page", 0))
+    if search_query != None:
+        ticket_db.all()
+        for thread in ticket_db.all():
+            if search_function(thread["title"], thread["email"], search_query):
+                to_display.append(thread)
+    return render_template("search.html", to_display=to_display, page=page, to_display_length=len(to_display))
 # ERROR HANLDERS
 @app.errorhandler(404)
 def page_not_found(e):

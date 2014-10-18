@@ -1,5 +1,12 @@
 {% extends "template.html" %}
 {% block body %}
+<center><form class="col-md-offset-1 col-md-10 blocked" action="/search" method="get">
+	<div class="input_group">
+		<input type="text" class="form-control" id="q" name="q" placeholder="Search" style="display:inline;">
+		<input type="submit" class="hidden">
+	</div>
+</form></center>
+{% if to_display_length > 0 %}
 <ul class="pager">
 	{% if page != 0%}
 		<li class="previous"><a href="{{ url_for('tickets') }}?page={{ page-1 }}">&larr; Newer</a></li>
@@ -52,4 +59,10 @@
 	{% endif %}
 	<li class="next"><a href="{{ url_for('tickets') }}?page={{ page+1 }}">Older &rarr;</a></li>
 </ul>
+{% else %}
+<div class="well well-lg" style="display:block;">
+  <h1>Oops...</h1>
+  <p>There doesnt apear to be anything here... <br> Try reformatting you search term</p>
+</div>
+{% endif %}
 {% endblock %}
