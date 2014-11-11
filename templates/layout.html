@@ -11,7 +11,7 @@
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/bootstrap.min.js"></script>
 	<script src="/static/js/moment.js"></script>
-	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+	<nav style="display:block;"class="navbar {{ theme.navbar }} navbar-fixed-top" role="navigation">
 		<div class="container">
 			<div class="navbar-header">
 				<img class="navbar-brand" alt="Brand" src="/static/images/ui/brand.png">
@@ -21,16 +21,20 @@
 			</p>
 			<ul class="nav navbar-nav">
         		<li><a href="/new">New</a></li>
-        		<li><a href="/ticket">tickets</a></li>
+        		<li><a href="/tickets">tickets <span class="badge">{{ unread }}</span></a></li>
 			</ul>
 			<ul class="nav navbar-nav navbar-right">
 				<li><a href="/settings"><span class="glyphicon glyphicon-cog"></span></a>
 		</div>
 	</nav>
-	{% for message in get_flashed_messages() %}
-		<div class="alert alert-danger" role="alert">{{ message }}</div>
-	{% endfor %}
-	{% block body %}
-	{% endblock %}
+    <div class="row" style="padding-top: 65px;">
+        <div class="col-md-10 col-md-offset-1">
+            {% for message in get_flashed_messages() %}
+                <div class="alert alert-danger" role="alert">{{ message }}</div>
+            {% endfor %}
+            {% block body %}
+            {% endblock %}
+        </div>
+    </div>
   </body>
 </html>

@@ -1,0 +1,22 @@
+{% extends "layout.html" %}
+{% block body %}
+<form role="form">
+		<div class="input-group">
+			<span class="input-group-addon"></span>
+			<input name="title" type="text" class="form-control" placeholder="Title" required>
+		</div>
+		<br>
+		<div class="input-group">
+			<span class="input-group-addon"></span>
+			<input name="username" type="text" class="form-control" placeholder="Username" required>
+			<span class="input-group-addon">
+	        	<input type="checkbox" name="is_vip">vip</input>
+	      	</span>
+		</div>
+		<br>
+		<div class="form-group">
+			<textarea class="form-control"></textarea>
+		</div>
+		<button type="submit" class="btn {{ theme.button }}">Submit</button>
+</form>
+{% endblock%}
