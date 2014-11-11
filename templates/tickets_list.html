@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+{% block body %}
+<table class="table table-striped">
+	<tbody>
+	{% for ticket in tickets %}
+		<tr>
+			<td>{{ momentjs(ticket.timestamp).fromNow()}}</td>
+			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</td>
+			<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</td>
+		</tr>
+	{% endfor %}
+	</tbody>
+</table>
+{% endblock%}

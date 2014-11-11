@@ -41,6 +41,7 @@ def login():
 				flash("error: could not login")
 	return render_template("login.html")
 
+
 if __name__ == "__main__":
 	import os
 	app.secret_key=os.urandom(16)
