@@ -1,6 +1,8 @@
 {% extends "layout.html" %}
 {% block body %}
-<script type='text/javascript'>setTimeout("location.reload();",1500000);</script>
+<h3>{{ user.username }} <small>last seen {{ momentjs(user.last_login).fromNow()}}</small></h3>
+<p>{{ user.username}} has submitted {{ tickets.total_submitted }} tickets. {{ tickets.percentage }}% of all tickets</p>
+<h4>Recent Tickets</h4>
 <table class="table table-striped">
 	<thead>
 		<tr>
@@ -12,7 +14,7 @@
 		</tr>
 	</thead>
 	<tbody>
-	{% for ticket in tickets %}
+	{% for ticket in recent_tickets %}
 		<tr>
 			<td>{{ momentjs(ticket.time).fromNow()}}</td>
 			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</a></td>
@@ -49,4 +51,4 @@
 	{% endfor %}
 	</tbody>
 </table>
-{% endblock%}
+{% endblock %}
