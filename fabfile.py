@@ -7,4 +7,7 @@ def addusers():
 def commit():
 	local("pip freeze > requirements.txt")
 	local("git add .")
-	local("git commit -m %s" % (datetime.now().strftime('%b-%d-%I%M%p-%G')))
+	commit_message = raw_input("commit message: ")
+	if commit_message == "":
+		commit_message = datetime.now().strftime('%b-%d-%I%M%p-%G')
+	local('git commit -m "%s"' % (commit_message))
