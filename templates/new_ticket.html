@@ -1,6 +1,6 @@
 {% extends "layout.html" %}
 {% block body %}
-<form role="form">
+<form role="form" method="post" action="/new">
 		<div class="input-group">
 			<span class="input-group-addon"></span>
 			<input name="title" type="text" class="form-control" placeholder="Title" required>
@@ -8,15 +8,22 @@
 		<br>
 		<div class="input-group">
 			<span class="input-group-addon"></span>
-			<input name="username" type="text" class="form-control" placeholder="Username" required>
+			<input name="author" type="text" class="form-control" placeholder="Username" required>
 			<span class="input-group-addon">
 	        	<input type="checkbox" name="is_vip">vip</input>
 	      	</span>
 		</div>
 		<br>
 		<div class="form-group">
-			<textarea class="form-control"></textarea>
+			<textarea class="form-control" name="text"></textarea>
 		</div>
-		<button type="submit" class="btn {{ theme.button }}">Submit</button>
+		<div class="form-group">
+			<select name="urgency" class="selectpicker">
+				<option value="1">Low</option>
+				<option value="2">High</option>
+				<option value="3">Urgent</option>
+			</select>
+			<button type="submit" class="btn {{ theme.button }}">Submit</button>
+		</div>
 </form>
 {% endblock%}

@@ -1,12 +1,49 @@
 {% extends "layout.html" %}
 {% block body %}
 <table class="table table-striped">
+	<thead>
+		<tr>
+			<td></td>
+			<td>Title</td>
+			<td>User</td>
+			<td>Importance</td>
+			<td>Status</td>
+		</tr>
+	</thead>
 	<tbody>
 	{% for ticket in tickets %}
 		<tr>
-			<td>{{ momentjs(ticket.timestamp).fromNow()}}</td>
-			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</td>
-			<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</td>
+			<td>{{ momentjs(ticket.time).fromNow()}}</td>
+			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</a></td>
+			<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</a>
+			{% if ticket.is_vip %}
+				<span class="label label-danger">*</span>
+			{% endif %}
+			</td>
+			<td>
+				{% if ticket.importance == 1 %}
+					<span class="label label-default ticket-label">Low</span>
+				{% elif ticket.importance == 2 %}
+					<span class="label label-warning ticket-label">High</span>
+				{% elif ticket.importance == 3 %}
+					<span class="label label-danger ticket-label">Urgent</span>
+				{% else %}
+					<span class="label label-default ticket-label">Low</span>
+				{% endif %}
+			</td>
+			<td>
+				{% if ticket.status == 0 %}
+					<span class="label label-danger ticket-label">Unseen</span>
+				{% elif ticket.status == 1 %}
+					<span class="label label-sucess ticket-label">Seen</span>
+				{% elif ticket.status == 2 %}
+					<span class="label label-primary ticket-label">Unresolved</span>
+				{% elif ticket.status == 3 %}
+					<span class="label label-default ticket-label">Resolved</span>
+				{% else %}
+					<span class="label label-danger ticket-label">Unseen</span>
+				{% endif %}
+			</td>
 		</tr>
 	{% endfor %}
 	</tbody>

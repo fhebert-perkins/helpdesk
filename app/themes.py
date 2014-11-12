@@ -1,10 +1,12 @@
 def get_theme(theme_name):
 	theme = {
 			"navbar" : "navbar-default",
-			"button" : "button-default"
+			"button" : "btn-default"
 			}
+	dark_theme = {
+		"navbar" : "navbar-inverse",
+		"button" : "btn-inverse"
+		}
 	if theme_name == "dark":
-		theme['navbar'] =  "navbar-inverse"
-		theme['button'] =  "button-inverse"
-
+		theme = dark_theme
 	return theme
