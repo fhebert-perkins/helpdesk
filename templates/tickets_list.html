@@ -1,6 +1,14 @@
 {% extends "layout.html" %}
 {% block body %}
 <script type='text/javascript'>setTimeout("location.reload();",1500000);</script>
+<ul class="pager">
+	{% if page[2] <= 0  %}
+		<li class="previous disabled"><a><span aria-hidden="true">&larr;</span> Previous</a></li>
+	{% else %}
+		<li class="previous"><a href="/tickets?p={{ page[1] }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+	{% endif %}
+	<li class="next"><a href="/tickets?p={{ page[0] }}">Next <span aria-hidden="true">&rarr;</span></a></li>
+</ul>
 <table class="table table-striped">
 	<thead>
 		<tr>
@@ -53,4 +61,12 @@
 	{% endfor %}
 	</tbody>
 </table>
+<ul class="pager">
+	{% if page[2] <= 0  %}
+		<li class="previous disabled"><a><span aria-hidden="true">&larr;</span> Previous</a></li>
+	{% else %}
+		<li class="previous"><a href="/tickets?p={{ page[1] }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+	{% endif %}
+	<li class="next"><a href="/tickets?p={{ page[0] }}">Next <span aria-hidden="true">&rarr;</span></a></li>
+</ul>
 {% endblock%}

@@ -7,7 +7,14 @@
 </nav>
 <h3>{{ ticket.title }} <small>Posted by {{ ticket.author }} {{ momentjs(ticket.time).fromNow()}}</small></h3>
 <blockquote>
-  <p>{{ ticket.content | safe }}</p>
+    <p>{{ ticket.content | safe }}</p>
+    {% if len(ticket.attachment) != 0 %}
+        <hr>
+        <h4>Attachments <span class="label label-default">{{ len(ticket.attachment) }}</span>:</h4>
+        {% for attachment in ticket.attachment %}
+            <a href="/static/images/usercontent/{{attachment}}" >{{ attachment }}</a><br>
+        {% endfor %}
+    {% endif %}
 </blockquote>
 <hr>
 {% for reply in ticket.reply %}

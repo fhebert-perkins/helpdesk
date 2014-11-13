@@ -3,11 +3,13 @@ from flask import (Flask, redirect,url_for, render_template,
 from flask.ext.mail import Mail, Message
 from pymongo import MongoClient
 from app import (momentjs, check_hash, get_theme, parse_post, themes,
-				sanitize)
+				allowed_file, gen_obf_filename)
 from hashlib import md5
 from datetime import datetime
 from uuid import uuid4
 import json
+from werkzeug import secure_filename
+import os
 
 #initializations
 app = Flask("helpdesk")
@@ -41,7 +43,7 @@ def index():
 	[tickets.append(ticket) for ticket in Tickets.find().sort("time", -1)]
 	app.jinja_env.globals['title'] = "View Tickets"
 	tickets = tickets[(page*10):(page*10)+10]
-	return render_template("tickets_list.html", tickets=tickets)
+	return render_template("tickets_list.html", tickets=tickets, page=[page+1, page-1, page])
 
 @app.route("/details/<url>", methods=["post", "get"])
 def details(url):
@@ -80,24 +82,40 @@ def new_thread():
 		return redirect(url_for("login", redirect=request.url))
 	app.jinja_env.globals['title'] = "New Ticket"
 	if request.method == 'POST':
-		is_vip =False
-		try:
-			if request.form["is_vip"]:
-				is_vip = True
-		except:
-			pass
-		# for key in request.form:
-		# 	request.form[key] = sanitize(request.form["key"])
-		tid = Tickets.insert({"title": request.form["title"],
-							"url" : uuid4().hex,
-							"content" : parse_post(request.form["text"]),
-							"time" : datetime.utcnow(),
-							"status" : 0,
-							"author" : request.form["author"],
-							"is_vip" : is_vip,
-							"reply" : [],
-							"importance" : int(request.form["urgency"])})
-		flash("created new ticket <a href='/detail/{0}'>here</a> ".format(md5(request.form["title"]).hexdigest()))
+		if Users.find_one({"username" :  request.form["author"]}) != None:
+			if request.files.getlist("file[]") != None:
+				exceptions = 0
+				files = request.files.getlist("file[]")
+				filenames = []
+				for file in files:
+					if file and allowed_file(file.filename):
+						filename = secure_filename(file.filename)
+						filename = gen_obf_filename(filename)
+						file.save(os.path.join("static/images/usercontent/", filename))
+						filenames.append(filename)
+					else:
+						exceptions += 1
+				if exceptions > 0:
+					flash("Failed to upload {0}/{1} files".format(str(exceptions), str(len(files))))
+			is_vip =False
+			try:
+				if request.form["is_vip"]:
+					is_vip = True
+			except:
+				pass
+			tid = Tickets.insert({"title": request.form["title"],
+								"url" : uuid4().hex,
+								"content" : parse_post(request.form["text"]),
+								"time" : datetime.utcnow(),
+								"status" : 0,
+								"author" : request.form["author"],
+								"is_vip" : is_vip,
+								"reply" : [],
+								"attachment" : filenames,
+								"importance" : int(request.form["urgency"])})
+			flash("created new ticket <a href='/detail/{0}'>here</a> ".format(md5(request.form["title"]).hexdigest()))
+		else:
+			flash("No such Username cannot create ticket")
 	return render_template("new_ticket.html")
 
 @app.route("/user/<user>")
@@ -200,5 +218,5 @@ def logout():
 
 if __name__ == "__main__":
 	import os
-	app.secret_key=os.urandom(32).encode('base_64')
+	app.secret_key= "TESTING123"#os.urandom(32).encode('base_64')
 	app.run(debug=True)

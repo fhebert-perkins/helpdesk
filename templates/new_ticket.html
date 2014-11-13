@@ -1,29 +1,46 @@
 {% extends "layout.html" %}
 {% block body %}
-<form role="form" method="post" action="/new">
+<form role="form" method="post" action="/new" enctype=multipart/form-data>
 		<div class="input-group">
-			<span class="input-group-addon"></span>
-			<input name="title" type="text" class="form-control" placeholder="Title" required>
-		</div>
-		<br>
-		<div class="input-group">
-			<span class="input-group-addon"></span>
-			<input name="author" type="text" class="form-control" placeholder="Username" required>
-			<span class="input-group-addon">
-	        	<input type="checkbox" name="is_vip">vip</input>
-	      	</span>
-		</div>
-		<br>
-		<div class="form-group">
-			<textarea class="form-control" name="text"></textarea>
+			<label for="subject">Subject</label>
+			<input id="subject" name="title" type="text" class="form-control" placeholder="Title" required>
 		</div>
 		<div class="form-group">
-			<select name="urgency" class="selectpicker">
+			<label for="uname">Username</label>
+			<input id="uname" name="author" type="text" class="form-control" placeholder="Username" required>
+		</div>
+		<div class="form-group">
+			<div class="checkbox">
+    			<label>
+      				<input name="is_vip"type="checkbox"> vip?
+				</label>
+  			</div>
+		</div>
+		<div class="form-group">
+			<label for="text"><small>uses <a href="http://daringfireball.net/projects/markdown/syntax">markdown</a> syntax<a</small></label>
+			<textarea id="post_textarea" class="form-control" name="text"></textarea>
+			<p class="help-block">
+				Markdown basics:<br>
+				links are like this [&lt;text&gt;](&lt;link&gt;) make sure you use "http://"<br>
+				to add an image do this ![&lt;image description&gt;](&lt;image link&gt;)<br>
+				to make something <strong>Bold</strong> do this *text*<br>
+				to make something <em>italic</em> do this **text**<br>
+				to mark something as <code>code</code> do this `text`<br>
+				also note that for there to be a carrage return there have to be two returns
+			</p>
+		</div>
+		<div class="form-group">
+			<label for="urgency">Urgency</label>
+			<select id="urgency" name="urgency" class="selectpicker">
 				<option value="1">Low</option>
 				<option value="2">High</option>
 				<option value="3">Urgent</option>
 			</select>
-			<button type="submit" class="btn {{ theme.button }}">Submit</button>
 		</div>
+		<div class="form-group">
+			<label for="atachments">Attachments</label>
+			<input id="attachments" class="form-control" multiple="" type="file" name="file[]">
+		</div>
+		<button type="submit" class="btn {{ theme.button }}">Submit</button>
 </form>
 {% endblock%}
