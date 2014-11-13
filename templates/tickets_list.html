@@ -9,6 +9,7 @@
 			<td>User</td>
 			<td>Importance</td>
 			<td>Status</td>
+			<td>Replies</td>
 		</tr>
 	</thead>
 	<tbody>
@@ -44,6 +45,9 @@
 				{% else %}
 					<span class="label label-danger ticket-label">Unseen</span>
 				{% endif %}
+			</td>
+			<td>
+				{{ len(ticket.reply) }}
 			</td>
 		</tr>
 	{% endfor %}

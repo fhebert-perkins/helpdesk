@@ -1,0 +1,7 @@
+{
+	"email_domains" : ["example.com"],
+	"email_server" : "localhost",
+	"email_port" : 25,
+	"email_username" : "username",
+	"email_password" : "password"
+}

@@ -1,0 +1,30 @@
+{% extends "settings/settings.html" %}
+{% block settings_content %}
+<form id="add_user" role="form" method="post" action="/settings/users">
+
+	<h3>New User</h3>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="username" type="text" class="form-control" placeholder="username" required>
+	</div>
+	<br>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="email" type="email" class="form-control" placeholder="email" required>
+	</div>
+	<br>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="fname" type="text" class="form-control" placeholder="first name" required>
+		<span class="input-group-addon"></span>
+		<input name="lname" type="text" class="form-control" placeholder="last name" required>
+	</div>
+	<br>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="password" type="password" class="form-control" placeholder="Password" required>
+	</div>
+	<br>
+	<button type="submit" class="btn {{ theme.button }}" name="submit" value="add_user">Add User</button>
+</form>
+{% endblock%}

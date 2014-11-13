@@ -1,0 +1,33 @@
+{% extends "settings/settings.html" %}
+{% block settings_content %}
+<form id="change_password" role="form" method="post" action="/settings/personal">
+	<h3>Change Password</h3>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="newpassword" type="text" class="form-control" placeholder="New Password" required>
+	</div>
+	<br>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="newpassword2" type="text" class="form-control" placeholder="New Password Again" required>
+	</div>
+	<br>
+	<div class="input-group">
+		<span class="input-group-addon"></span>
+		<input name="oldpassword" type="text" class="form-control" placeholder="Current Password" required>
+	</div>
+	<br>
+	<button type="submit" class="btn {{ theme.button }}" name="changepw">Change Password</button>
+</form>
+<br>
+<form id="change_theme" role="form" method="post" action="/settings/personal">
+	<h3>Theme</h3>
+	<div class="input-group">
+		<select class="selectpicker">
+				<option value="light">Light</option>
+				<option value="dark">Dark</option>
+		</select>
+		<button type="submit" class="btn {{ theme.button }}" name="changetheme">Change Theme</button>
+	</div>
+</form>
+{% endblock%}

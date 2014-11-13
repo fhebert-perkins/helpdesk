@@ -2,12 +2,12 @@ from flask import (Flask, redirect,url_for, render_template,
 				   redirect, request, session, g, flash)
 from flask.ext.mail import Mail, Message
 from pymongo import MongoClient
-from app import momentjs, check_hash, get_theme, parse_post
+from app import (momentjs, check_hash, get_theme, parse_post, themes,
+				sanitize)
 from hashlib import md5
 from datetime import datetime
 from uuid import uuid4
-
-
+import json
 
 #initializations
 app = Flask("helpdesk")
@@ -29,6 +29,7 @@ def setup():
 	app.jinja_env.globals['unread'] = get_unread()
 	app.jinja_env.globals['language'] = session.get("language", "en")
 	app.jinja_env.globals['theme'] = get_theme(session.get("theme"))
+	app.jinja_env.globals['len'] = len
 
 @app.route("/")
 @app.route("/tickets")
@@ -46,6 +47,7 @@ def index():
 def details(url):
 	if not session.get("logged_in"):
 		return redirect(url_for("login", redirect=request.url))
+	app.jinja_env.globals['unread'] = get_unread()
 	ticket = Tickets.find_one({"url" : url})
 	if ticket == None:
 		return 404
@@ -84,6 +86,8 @@ def new_thread():
 				is_vip = True
 		except:
 			pass
+		# for key in request.form:
+		# 	request.form[key] = sanitize(request.form["key"])
 		tid = Tickets.insert({"title": request.form["title"],
 							"url" : uuid4().hex,
 							"content" : parse_post(request.form["text"]),
@@ -112,8 +116,60 @@ def user_page(user):
 	return render_template("user_profile.html", user=user_data, tickets=tickets_submitted, recent_tickets= recent_tickets)
 
 @app.route("/settings")
-def settings():
-	return "NYI"
+@app.route("/settings/<window>", methods=["post", "get"])
+def settings_view(window=None):
+	if not session.get("logged_in"):
+		return redirect(url_for("login", redirect=request.url))
+	if window == "personal":
+		app.jinja_env.globals["settings_panel"] = 1
+		app.jinja_env.globals["title"] = "settings : Personal"
+		if request.method == "post":
+			if form["submit"] == "changepw":
+				flash("NYI")
+			elif form["submit"] == "changetheme":
+				flash("NYI")
+			else:
+				pass
+		user = Users.find_one({"username" : session.get("username")})
+		return render_template("settings/personal.html", user=user, themes=themes)
+	elif window == "users":
+		app.jinja_env.globals["settings_panel"] = 2
+		app.jinja_env.globals["title"] = "settings : user"
+		if request.method == "post":
+			if form["submit"] == "add_user":
+				if User.find_one({"username" : request.form["username"]}) == None and User.find_one({"email" : request.form["email"]}) == None:
+					salt = salt = os.urandom(16).encode('base_64')
+					Users.insert({
+									"username" : request.form["username"],
+									"email" : request.form["email"],
+									"fname" : request.form["fname"],
+									"lname" : request.form["lname"],
+									"password" : [salt, sha224(salt+password)]
+								})
+					flash("New user created")
+				else:
+					flash("Something went wrong")
+			else:
+				pass
+		return render_template("settings/users.html")
+	elif window == "misc":
+		app.jinja_env.globals["settings_panel"] = 3
+		app.jinja_env.globals["title"] = "settings : misc"
+		config_file = open("config.json", "r")
+		config = json.loads(config_file.read())
+		config_file.close()
+		if request.method == "post":
+			if form["submit"] == "changeemailcredentials":
+				flash("NYI")
+			elif form["submit"] == "addalloweddomain":
+				flash("NYI")
+			else:
+				pass
+		return render_template("settings/email.html", config=config)
+	else:
+		return render_template("settings/personal.html")
+
+
 
 @app.route("/login", methods=["post", "get"])
 def login():
@@ -144,5 +200,5 @@ def logout():
 
 if __name__ == "__main__":
 	import os
-	app.secret_key=os.urandom(24)
+	app.secret_key=os.urandom(32).encode('base_64')
 	app.run(debug=True)

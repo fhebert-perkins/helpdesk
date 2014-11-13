@@ -1,0 +1,30 @@
+{% extends "layout.html" %}
+{% block body %}
+{% if settings_panel == 1 %}
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation" class="active"><a href="/settings/personal">My Settings</a></li>
+		<li role="presentation"><a href="/settings/users">Users</a></li>
+		<li role="presentation"><a href="/settings/misc">Misc</a></li>
+	</ul>
+{% elif settings_panel == 2 %}
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation"><a href="/settings/personal">My Settings</a></li>
+		<li role="presentation" class="active"><a href="/settings/users">Users</a></li>
+		<li role="presentation"><a href="/settings/misc">Misc</a></li>
+	</ul>
+{% elif settings_panel == 3 %}
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation"><a href="/settings/personal">My Settings</a></li>
+		<li role="presentation"><a href="/settings/users">Users</a></li>
+		<li role="presentation" class="active"><a href="/settings/misc">Misc</a></li>
+	</ul>
+{% else %}
+	<ul class="nav nav-tabs" role="tablist">
+		<li role="presentation" class="active"><a href="/settings/personal">My Settings</a></li>
+		<li role="presentation"><a href="/settings/users">Users</a></li>
+		<li role="presentation"><a href="/settings/misc">Misc</a></li>
+	</ul>
+{% endif %}
+	{% block settings_content %}
+	{% endblock %}
+{% endblock %}
