@@ -4,20 +4,23 @@
 	<h3>Change Password</h3>
 	<div class="input-group">
 		<span class="input-group-addon"></span>
-		<input name="newpassword" type="text" class="form-control" placeholder="New Password" required>
+		<input name="newpassword" type="password" class="form-control" placeholder="New Password" required>
 	</div>
 	<br>
 	<div class="input-group">
 		<span class="input-group-addon"></span>
-		<input name="newpassword2" type="text" class="form-control" placeholder="New Password Again" required>
+		<input name="newpassword2" type="password" class="form-control" placeholder="New Password Again" required>
 	</div>
 	<br>
 	<div class="input-group">
 		<span class="input-group-addon"></span>
-		<input name="oldpassword" type="text" class="form-control" placeholder="Current Password" required>
+		<input name="oldpassword" type="password" class="form-control" placeholder="Current Password" required>
+	</div>
+	<div class="input-group">
+		<inputl type="text" name="form_name" value="changepw" hidden>
 	</div>
 	<br>
-	<button type="submit" class="btn {{ theme.button }}" name="changepw">Change Password</button>
+	<button type="submit"  name="submit" class="btn {{ theme.button }}" value="changepw">Change Password</button>
 </form>
 <br>
 <form id="change_theme" role="form" method="post" action="/settings/personal">

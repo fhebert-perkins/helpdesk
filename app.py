@@ -1,10 +1,10 @@
 from flask import (Flask, redirect,url_for, render_template,
-				   redirect, request, session, g, flash)
+				   redirect, request, session, g, flash, abort)
 from flask.ext.mail import Mail, Message
 from pymongo import MongoClient
-from app import (momentjs, check_hash, get_theme, parse_post, themes,
+from libs import (momentjs, check_hash, get_theme, parse_post, themes,
 				allowed_file, gen_obf_filename)
-from hashlib import md5
+from hashlib import md5, sha224
 from datetime import datetime
 from uuid import uuid4
 import json
@@ -16,7 +16,11 @@ app = Flask("helpdesk")
 mailer = Mail(app)
 
 Users = MongoClient().helpdesk.profiles.Users
-Tickets = MongoClient().helpdesk.data.Tickets
+app.config["TESTING"] = True
+if not app.config["TESTING"]:
+	Tickets = MongoClient().helpdesk.data.Tickets
+else:
+	Tickets = MongoClient().helpdesktest.profiles.Tickets
 
 def get_unread():
 	if Tickets.find({"status" : 0}) == None:
@@ -32,6 +36,7 @@ def setup():
 	app.jinja_env.globals['language'] = session.get("language", "en")
 	app.jinja_env.globals['theme'] = get_theme(session.get("theme"))
 	app.jinja_env.globals['len'] = len
+
 
 @app.route("/")
 @app.route("/tickets")
@@ -83,10 +88,10 @@ def new_thread():
 	app.jinja_env.globals['title'] = "New Ticket"
 	if request.method == 'POST':
 		if Users.find_one({"username" :  request.form["author"]}) != None:
-			if request.files.getlist("file[]") != None:
+			filenames = []
+			if len(request.files.getlist("file[]")) != 0:
 				exceptions = 0
 				files = request.files.getlist("file[]")
-				filenames = []
 				for file in files:
 					if file and allowed_file(file.filename):
 						filename = secure_filename(file.filename)
@@ -103,17 +108,27 @@ def new_thread():
 					is_vip = True
 			except:
 				pass
-			tid = Tickets.insert({"title": request.form["title"],
-								"url" : uuid4().hex,
-								"content" : parse_post(request.form["text"]),
-								"time" : datetime.utcnow(),
-								"status" : 0,
-								"author" : request.form["author"],
-								"is_vip" : is_vip,
-								"reply" : [],
-								"attachment" : filenames,
-								"importance" : int(request.form["urgency"])})
-			flash("created new ticket <a href='/detail/{0}'>here</a> ".format(md5(request.form["title"]).hexdigest()))
+
+			ticket_title = request.form.get("title",None)
+			ticket_content = parse_post(request.form.get("text"))
+			ticket_urgency = int(request.form.get("urgency"))
+			if len(ticket_title) > 2 and len(ticket_content) > 1 and ticket_urgency <= 3 and ticket_urgency >= 1:
+				ticket_url = uuid4().hex
+				tid = Tickets.insert({
+					"title": ticket_title,
+					"url" : ticket_url,
+					"content" : ticket_content,
+					"time" : datetime.utcnow(),
+					"status" : 0,
+					"author" : request.form.get("author"),
+					"is_vip" : is_vip,
+					"reply" : [],
+					"attachment" : filenames,
+					"importance" : ticket_urgency
+				})
+				flash("created new ticket id:{0} ".format(ticket_url))
+			else:
+				flash("Error creating ticket")
 		else:
 			flash("No such Username cannot create ticket")
 	return render_template("new_ticket.html")
@@ -124,7 +139,7 @@ def user_page(user):
 		return redirect(url_for("login", redirect=request.url))
 	user_data = Users.find_one({"username" : user})
 	if user_data == None:
-		return 404
+		abort(404)
 	app.jinja_env.globals["title"] = user
 	recent_tickets = Tickets.find({"author" : user}).sort("time", -1)[0:10]
 	tickets_submitted = {
@@ -132,9 +147,8 @@ def user_page(user):
 						"percentage" : (float(Tickets.find({"author" : user}).count())/float(Tickets.find().count()))*100
 						}
 	return render_template("user_profile.html", user=user_data, tickets=tickets_submitted, recent_tickets= recent_tickets)
-
 @app.route("/settings")
-@app.route("/settings/<window>", methods=["post", "get"])
+@app.route("/settings/<window>", methods=["POST", "GET"])
 def settings_view(window=None):
 	if not session.get("logged_in"):
 		return redirect(url_for("login", redirect=request.url))
@@ -142,33 +156,32 @@ def settings_view(window=None):
 		app.jinja_env.globals["settings_panel"] = 1
 		app.jinja_env.globals["title"] = "settings : Personal"
 		if request.method == "post":
-			if form["submit"] == "changepw":
-				flash("NYI")
-			elif form["submit"] == "changetheme":
-				flash("NYI")
-			else:
-				pass
+			if request.form["form_name"] == "change_pw":
+				if request.form["newpassword"] == request.form["newpassword2"]:
+					user = Users.find_one({"username" : session.get("username")})
+					if check_hash(request.form["password"], user["password"][0], user["password"][1]):
+						salt = os.urandom(16).encode('base_64')
+						User.update({"_id" : user["_id"]}, {"$set" : {"password" : [salt, sha224(salt+password)]}})
+					else:
+						flash("wrong password")
+				else:
+					flash("passwords do not match")
 		user = Users.find_one({"username" : session.get("username")})
 		return render_template("settings/personal.html", user=user, themes=themes)
 	elif window == "users":
 		app.jinja_env.globals["settings_panel"] = 2
 		app.jinja_env.globals["title"] = "settings : user"
-		if request.method == "post":
-			if form["submit"] == "add_user":
-				if User.find_one({"username" : request.form["username"]}) == None and User.find_one({"email" : request.form["email"]}) == None:
-					salt = salt = os.urandom(16).encode('base_64')
-					Users.insert({
+		if request.method == "POST":
+			if Users.find_one({"username" : request.form["username"]}) == None and Users.find_one({"email" : request.form["email"]})==None:
+				salt = os.urandom(16).encode('base_64')
+				uid = Users.insert({
 									"username" : request.form["username"],
-									"email" : request.form["email"],
-									"fname" : request.form["fname"],
+									"email" : request.form["email"],"fname" : request.form["fname"],
 									"lname" : request.form["lname"],
-									"password" : [salt, sha224(salt+password)]
+									"password" : [salt, sha224(salt+request.form["password"]).hexdigest()],
+									"last_login" : None
 								})
-					flash("New user created")
-				else:
-					flash("Something went wrong")
-			else:
-				pass
+				flash("New user created")
 		return render_template("settings/users.html")
 	elif window == "misc":
 		app.jinja_env.globals["settings_panel"] = 3
@@ -197,17 +210,19 @@ def login():
 		return redirect(request.args.get("redirect", None))
 	if request.method == "POST":
 			user = Users.find_one({"username" : request.form["username"]})
-			password = user["password"]
-			if check_hash(request.form["password"], password[0], password[1]):
-				session["logged_in"] = True
-				session["username"] = request.form["username"]
-				session["theme"] = user.get("theme", None)
-				Users.update({"_id" : user["_id"]}, {"$set" : {"last_login" : datetime.utcnow()}})
-				if request.args.get("redirect", None) == None:
-					return redirect(url_for("index"))
-				return redirect(request.args.get("redirect", None))
-			else:
-				flash("error: could not login")
+			try:
+				password = user["password"]
+				if check_hash(request.form["password"], password[0], password[1]):
+					session["logged_in"] = True
+					session["username"] = request.form["username"]
+					session["theme"] = user.get("theme", None)
+					Users.update({"_id" : user["_id"]}, {"$set" : {"last_login" : datetime.utcnow()}})
+					flash("Logged In")
+					return redirect(request.args.get("redirect") or url_for("index"))
+				else:
+					flash("Error: Could Not Login")
+			except:
+				flash("Error: Could Not Login")
 	return render_template("login.html")
 
 @app.route("/logout")

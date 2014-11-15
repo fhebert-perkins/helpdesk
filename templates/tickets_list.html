@@ -1,64 +1,72 @@
 {% extends "layout.html" %}
 {% block body %}
-<script type='text/javascript'>setTimeout("location.reload();",1500000);</script>
-<ul class="pager">
-	{% if page[2] <= 0  %}
-		<li class="previous disabled"><a><span aria-hidden="true">&larr;</span> Previous</a></li>
+<script type='text/javascript'>setTimeout("location.reload();",15000);</script>
+	<ul class="pager">
+		{% if page[2] <= 0  %}
+			<li class="previous disabled"><a><span aria-hidden="true">&larr;</span> Previous</a></li>
+		{% else %}
+			<li class="previous"><a href="/tickets?p={{ page[1] }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+		{% endif %}
+		<li class="next"><a href="/tickets?p={{ page[0] }}">Next <span aria-hidden="true">&rarr;</span></a></li>
+	</ul>
+	{% if len(ticket) > 0 %}
+		<table class="table table-striped">
+			<thead>
+				<tr>
+					<td></td>
+					<td>Title</td>
+					<td>User</td>
+					<td>Importance</td>
+					<td>Status</td>
+					<td>Replies</td>
+				</tr>
+			</thead>
+			<tbody>
+		{% for ticket in tickets %}
+			<tr>
+				<td>{{ momentjs(ticket.time).fromNow()}}</td>
+				<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</a></td>
+				<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</a>
+				{% if ticket.is_vip %}
+					<span class="label label-danger">*</span>
+				{% endif %}
+				</td>
+				<td>
+					{% if ticket.importance == 1 %}
+						<span class="label label-default ticket-label">Low</span>
+					{% elif ticket.importance == 2 %}
+						<span class="label label-warning ticket-label">High</span>
+					{% elif ticket.importance == 3 %}
+						<span class="label label-danger ticket-label">Urgent</span>
+					{% else %}
+						<span class="label label-default ticket-label">Low</span>
+					{% endif %}
+				</td>
+				<td>
+					{% if ticket.status == 0 %}
+						<span class="label label-danger ticket-label">Unseen</span>
+					{% elif ticket.status == 1 %}
+						<span class="label label-success ticket-label">Seen</span>
+					{% elif ticket.status == 2 %}
+						<span class="label label-primary ticket-label">Unresolved</span>
+					{% elif ticket.status == 3 %}
+						<span class="label label-default ticket-label">Resolved</span>
+					{% else %}
+						<span class="label label-danger ticket-label">Unseen</span>
+					{% endif %}
+				</td>
+				<td>
+					{{ len(ticket.reply) }}
+				</td>
+			</tr>
+		{% endfor %}
 	{% else %}
-		<li class="previous"><a href="/tickets?p={{ page[1] }}"><span aria-hidden="true">&larr;</span> Previous</a></li>
+		<div class="jumbotron">
+		  <h1>Hello World!</h1>
+		  <p>It does not seem that any tickets are here.</p>
+		  <p><a class="btn btn-primary btn-lg" href="/new" role="button">Fix That</a></p>
+		</div>
 	{% endif %}
-	<li class="next"><a href="/tickets?p={{ page[0] }}">Next <span aria-hidden="true">&rarr;</span></a></li>
-</ul>
-<table class="table table-striped">
-	<thead>
-		<tr>
-			<td></td>
-			<td>Title</td>
-			<td>User</td>
-			<td>Importance</td>
-			<td>Status</td>
-			<td>Replies</td>
-		</tr>
-	</thead>
-	<tbody>
-	{% for ticket in tickets %}
-		<tr>
-			<td>{{ momentjs(ticket.time).fromNow()}}</td>
-			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</a></td>
-			<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</a>
-			{% if ticket.is_vip %}
-				<span class="label label-danger">*</span>
-			{% endif %}
-			</td>
-			<td>
-				{% if ticket.importance == 1 %}
-					<span class="label label-default ticket-label">Low</span>
-				{% elif ticket.importance == 2 %}
-					<span class="label label-warning ticket-label">High</span>
-				{% elif ticket.importance == 3 %}
-					<span class="label label-danger ticket-label">Urgent</span>
-				{% else %}
-					<span class="label label-default ticket-label">Low</span>
-				{% endif %}
-			</td>
-			<td>
-				{% if ticket.status == 0 %}
-					<span class="label label-danger ticket-label">Unseen</span>
-				{% elif ticket.status == 1 %}
-					<span class="label label-success ticket-label">Seen</span>
-				{% elif ticket.status == 2 %}
-					<span class="label label-primary ticket-label">Unresolved</span>
-				{% elif ticket.status == 3 %}
-					<span class="label label-default ticket-label">Resolved</span>
-				{% else %}
-					<span class="label label-danger ticket-label">Unseen</span>
-				{% endif %}
-			</td>
-			<td>
-				{{ len(ticket.reply) }}
-			</td>
-		</tr>
-	{% endfor %}
 	</tbody>
 </table>
 <ul class="pager">
