@@ -4,6 +4,8 @@ import unittest
 import tempfile
 from coverage import coverage
 from libs import gen_password_arr
+from loremipsum import get_paragraphs, get_sentences
+from random import randint
 cov = coverage(branch=True, omit=['venv/*', 'app_tests.py', "fabfile.py"])
 cov.start()
 
@@ -46,33 +48,45 @@ class AppTestCases(unittest.TestCase):
 	def test_add_ticket(self):
 		assert "Redirecting" in self.app.get("/new").data # makes sure that authentication is needed
 		self.login("fhebert-perkins16", "password")
+		orv = self.app.get("/")
 		# Bad title
-		rv = self.add_ticket("", "fhebert-perkins16", "HERPDERPDERPDERP", 1, False)
+		rv = self.add_ticket("", "fhebert-perkins16", get_sentences(1)[0], 1, False)
 		assert "Error creating ticket" in rv.data
 		# Bad Username
 		rv = self.add_ticket("herpderp", "", "Herpderp", 1, False)
 		assert "No such Username cannot create ticket" in rv.data
 		# No text
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "", 1, False)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", "", 1, False)
 		assert "Error creating ticket" in rv.data
 		# Fully formed tickets
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 1, False)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 1, False)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 2, False)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 2, False)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 3, False)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 3, False)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 1, True)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 1, True)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 2, True)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 2, True)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 3, True)
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 3, True)
 		assert "created new ticket id" in rv.data
-		rv = self.add_ticket("herpderp", "fhebert-perkins16", "HERPDERPDERPDERP", 3, "Fish")
+		rv = self.add_ticket(get_sentences(1)[0], "fhebert-perkins16", get_sentences(1)[0], 3, "Fish")
 		assert "created new ticket id" in rv.data
+		nrv = self.app.get("/")
+		assert orv != nrv
 	def test_empty_db(self):
 		assert "Redirecting" in self.app.get("/").data # makes sure that authentication is needed
 		self.login("fhebert-perkins16", "password")
+		rv1 = self.app.get("/")
+		rv2 = self.app.get("/tickets")
+		assert rv1.data == rv2.data
+		tickets = app.Tickets.find({"status" : 0})
+		for ticket in tickets:
+			rv = self.app.get("/details/{0}".format(ticket["url"]))
+			assert ticket["title"] in rv.data
+			assert ticket["content"] in rv.data
+			assert ticket["author"] in rv.data
 		rv1 = self.app.get("/")
 		rv2 = self.app.get("/tickets")
 		assert rv1.data == rv2.data
@@ -80,8 +94,12 @@ class AppTestCases(unittest.TestCase):
 	def test_details(self):
 		assert "Redirecting" in self.app.get("/details/blarg").data # makes sure that authentication is needed
 		self.login("fhebert-perkins16", "password")
-		rv = self.app.get("/detail/blarg")
+		rv = self.app.get("/details/blarg")
 		assert 404 == rv.status_code
+		test = app.Tickets.find_one()["url"]
+		rv = self.app.get("/details/{0}".format(test))
+		assert 200 == rv.status_code
+
 	def test_user(self):
 		assert "Redirecting" in self.app.get("/user/fhebert-perkins16").data
 		assert "Redirecting" in self.app.get("/user/imnotarealuser").data
@@ -100,6 +118,28 @@ class AppTestCases(unittest.TestCase):
 		self.login("fhebert-perkins16", "password")
 		rv = self.app.get("/login")
 		assert "Redirecting" in self.app.get("/login").data
+	def test_settings(self):
+		assert "Redirecting" in self.app.get("/settings").data
+		assert "Redirecting" in self.app.get("/settings/personal").data
+		assert "Redirecting" in self.app.get("/settings/users").data
+		assert "Redirecting" in self.app.get("/settings/misc").data
+	def test_replies(self):
+		tickets = app.Tickets.find({"reply" : []})
+		self.login("fhebert-perkins16", "password")
+		for ticket in tickets:
+			for i in range(randint(1, 20)):
+				msg = " ".join(get_sentences(randint(1,5)))
+				rv = self.app.post('/details/{0}'.format(ticket["url"]), data=dict(
+					text=msg,
+				), follow_redirects=True)
+				assert msg in rv.data
+			msg = get_sentences(1)[0]
+			rv = self.app.post('/details/{0}'.format(ticket["url"]), data=dict(
+				derp=msg,
+			), follow_redirects=True)
+			assert not msg in rv.data
+
+
 
 if __name__ == "__main__":
 	try:

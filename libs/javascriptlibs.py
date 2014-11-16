@@ -1,4 +1,4 @@
-from jinja2 import Markup
+from jinja2 import Markup # Pragma: No Cover
 
 class momentjs(object):
     def __init__(self, timestamp):

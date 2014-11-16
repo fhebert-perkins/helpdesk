@@ -1,5 +1,5 @@
-import markdown
-from uuid import uuid4
+import markdown # Pragma: No Cover
+from uuid import uuid4 # Pragma: No Cover
 #import beautifulsoup4
 def parse_post(content):
 	content = content.replace("<", "&lt;").replace(">", "&gt;")
