@@ -6,6 +6,7 @@ from coverage import coverage
 from libs import gen_password_arr
 from loremipsum import get_paragraphs, get_sentences
 from random import randint
+import pep8
 cov = coverage(branch=True, omit=['venv/*', 'app_tests.py', "fabfile.py"])
 cov.start()
 
@@ -123,11 +124,18 @@ class AppTestCases(unittest.TestCase):
 		assert "Redirecting" in self.app.get("/settings/personal").data
 		assert "Redirecting" in self.app.get("/settings/users").data
 		assert "Redirecting" in self.app.get("/settings/misc").data
+		self.login("fhebert-perkins16","password")
+		assert 200 == self.app.get("/settings").status_code
+		assert 200 == self.app.get("/settings/personal").status_code
+		assert 200 == self.app.get("/settings/users").status_code
+		assert 200 == self.app.get("/settings/misc").status_code
+		assert 404 == self.app.get("/settings/blarg").status_code
+
 	def test_replies(self):
 		tickets = app.Tickets.find({"reply" : []})
 		self.login("fhebert-perkins16", "password")
 		for ticket in tickets:
-			for i in range(randint(1, 20)):
+			for i in range(randint(0, 20)):
 				msg = " ".join(get_sentences(randint(1,5)))
 				rv = self.app.post('/details/{0}'.format(ticket["url"]), data=dict(
 					text=msg,
@@ -138,8 +146,38 @@ class AppTestCases(unittest.TestCase):
 				derp=msg,
 			), follow_redirects=True)
 			assert not msg in rv.data
+		def test_change_pw(self):
+			rv = self.login("fhebert-perkins16", "password")
+			assert "Logged In" in rv.data
+			rv = self.app.post("/settings/personal",data=dict(
+				form_name="change_pw",
+				newpassword="testtest",
+				newpassword2="testtest",
+				oldpassword="password"
+			))
+			assert not "wrong password" in rv.data
+			assert not "passwords do not match" in rv.data
+			self.logout()
+			rv = self.login("fhebert-perkins16", "testtest")
+			assert "Logged In" in rv.data
 
 
+
+		def test_pep8_conformance(self):
+			pep8style = pep8.StyleGuide(quiet=True)
+			result = pep8style.check_files([
+											'app.py',
+											'libs/__init.py',
+											'libs/auth.py',
+											'libs/javascriotlibs.py',
+											'libs/search.py',
+											'libs/themes.py',
+											'app_test.py'
+											])
+			self.assertEqual(
+							result.total_errors, 0,
+							"Found code style errors (and warnings)."
+							)
 
 if __name__ == "__main__":
 	try:

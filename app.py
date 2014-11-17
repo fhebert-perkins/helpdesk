@@ -3,7 +3,7 @@ from flask import (Flask, redirect,url_for, render_template,
 from flask.ext.mail import Mail, Message # Pragma: No Cover
 from pymongo import MongoClient # Pragma: No Cover
 from libs import (momentjs, check_hash, get_theme, parse_post, themes,
-				allowed_file, gen_obf_filename) # Pragma: No Cover
+				allowed_file, gen_obf_filename, full_search) # Pragma: No Cover
 from hashlib import md5, sha224 # Pragma: No Cover
 from datetime import datetime # Pragma: No Cover
 from uuid import uuid4 # Pragma: No Cover
@@ -202,7 +202,15 @@ def settings_view(window=None):
 	else:
 		abort(404)
 
-
+@app.route("/search")
+def search():
+	query = request.args.get("q", None)
+	app.jinja_env.globals["title"] = "search"
+	if query == None:
+		return render_template("search.html", results=[], time_taken=0)
+	else:
+		timedelta, results = full_search(query)
+		return render_template("search.html", results=results, time_taken=timedelta)
 
 @app.route("/login", methods=["post", "get"]) # Pragma: No Cover
 def login():
@@ -233,7 +241,7 @@ def logout():
 		session.pop("logged_in", None)
 	return redirect(url_for("index"))
 
-if __name__ == "__main__":
-	import os
-	app.secret_key= "TESTING123"#os.urandom(32).encode('base_64')
-	app.run(debug=True)
+if __name__ == "__main__": # Pragma: No Cover
+	import os # Pragma: No Cover
+	app.secret_key= "TESTING123"#os.urandom(32).encode('base_64') # Pragma: No Cover
+	app.run(debug=True) # Pragma: No Cover
