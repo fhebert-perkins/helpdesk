@@ -36,6 +36,7 @@ def setup():
 	app.jinja_env.globals['language'] = session.get("language", "en")
 	app.jinja_env.globals['theme'] = get_theme(session.get("theme"))
 	app.jinja_env.globals['len'] = len
+	app.jinja_env.globals['str'] = str
 
 @app.route("/") # Pragma: No Cover
 @app.route("/tickets") # Pragma: No Cover

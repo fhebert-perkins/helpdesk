@@ -6,6 +6,9 @@
 		<p>That query did not return anything</p>
 	</div>
 {% else %}
+	<p>
+		Found {{ len(results) }} result(s) in {{ str(time_taken)[0:5] }}s
+	</p>
 	<table class="table table-striped">
 		<thead>
 			<tr>
@@ -21,7 +24,11 @@
 	{% for ticket in results %}
 		<tr>
 			<td>{{ momentjs(ticket.time).fromNow()}}</td>
-			<td><a href="/details/{{ ticket.url }}">{{ ticket.title }}</a></td>
+			<td><a href="/details/{{ ticket.url }}">{{ ticket.title[0:90].strip() }}
+			{% if len(ticket.title) > 50 %}
+				<span>...</span>
+			{% endif %}
+			</a></td>
 			<td><a href="/user/{{ ticket.author}}">{{ ticket.author }}</a>
 			{% if ticket.is_vip %}
 				<span class="label label-danger">*</span>
@@ -52,7 +59,11 @@
 				{% endif %}
 			</td>
 			<td>
-				{{ len(ticket.reply) }}
+				{% if len(ticket.reply) > 100 %}
+					<span>&gt;100</span>
+				{% else %}
+					{{ len(ticket.reply) }}
+				{% endif %}
 			</td>
 		</tr>
 	{% endfor %}

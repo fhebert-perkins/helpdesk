@@ -135,7 +135,7 @@ class AppTestCases(unittest.TestCase):
 		tickets = app.Tickets.find({"reply" : []})
 		self.login("fhebert-perkins16", "password")
 		for ticket in tickets:
-			for i in range(randint(0, 20)):
+			for i in range(randint(0, 200)):
 				msg = " ".join(get_sentences(randint(1,5)))
 				rv = self.app.post('/details/{0}'.format(ticket["url"]), data=dict(
 					text=msg,
