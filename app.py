@@ -1,19 +1,18 @@
 from flask import (Flask, redirect,url_for, render_template,
 				   redirect, request, session, g, flash, abort) # Pragma: No Cover
-from flask.ext.mail import Mail, Message # Pragma: No Cover
 from pymongo import MongoClient # Pragma: No Cover
 from libs import (momentjs, check_hash, get_theme, parse_post, themes,
-				allowed_file, gen_obf_filename, full_search) # Pragma: No Cover
+				allowed_file, gen_obf_filename, full_search, send_email) # Pragma: No Cover
 from hashlib import md5, sha224 # Pragma: No Cover
 from datetime import datetime # Pragma: No Cover
 from uuid import uuid4 # Pragma: No Cover
 import json # Pragma: No Cover
 from werkzeug import secure_filename # Pragma: No Cover
+import test
 import os # Pragma: No Cover
 
 #initializations
 app = Flask("helpdesk") # Pragma: No Cover
-mailer = Mail(app) # Pragma: No Cover
 
 Users = MongoClient().helpdesk.profiles.Users # Pragma: No Cover
 app.config["TESTING"] = True # Pragma: No Cover
@@ -109,7 +108,7 @@ def new_thread():
 					is_vip = True
 			except:
 				pass
-
+			user_email = Users.find_one({"username" : request.form.get("author")})["email"]
 			ticket_title = request.form.get("title",None)
 			ticket_content = parse_post(request.form.get("text"))
 			ticket_urgency = int(request.form.get("urgency"))
@@ -127,6 +126,11 @@ def new_thread():
 					"attachment" : filenames,
 					"importance" : ticket_urgency
 				})
+
+				send_email(user_email,
+						"New ticket created",
+						render_template("email_templates/new_ticket.html", subject=ticket_title, content=ticket_content, ticket_id=ticket_url)
+						)
 				flash("created new ticket id:{0} ".format(ticket_url))
 			else:
 				flash("Error creating ticket")
@@ -162,7 +166,7 @@ def settings_view(window=None):
 					user = Users.find_one({"username" : session.get("username")})
 					if check_hash(request.form["password"], user["password"][0], user["password"][1]):
 						salt = os.urandom(16).encode('base_64')
-						User.update({"_id" : user["_id"]}, {"$set" : {"password" : [salt, sha224(salt+password)]}})
+						Users.update({"_id" : user["_id"]}, {"$set" : {"password" : [salt, sha224(salt+password)]}})
 					else:
 						flash("wrong password")
 				else:

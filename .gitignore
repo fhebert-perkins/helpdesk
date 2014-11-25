@@ -2,3 +2,4 @@ venv/
 *.pyc
 static/images/usercontent/
 tmp/
+config.json

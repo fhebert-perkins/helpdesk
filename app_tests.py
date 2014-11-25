@@ -146,39 +146,38 @@ class AppTestCases(unittest.TestCase):
 				derp=msg,
 			), follow_redirects=True)
 			assert not msg in rv.data
-		def test_change_pw(self):
-			rv = self.login("fhebert-perkins16", "password")
-			assert "Logged In" in rv.data
-			rv = self.app.post("/settings/personal",data=dict(
-				form_name="change_pw",
-				newpassword="testtest",
-				newpassword2="testtest",
-				oldpassword="password"
-			))
-			assert not "wrong password" in rv.data
-			assert not "passwords do not match" in rv.data
-			self.logout()
-			rv = self.login("fhebert-perkins16", "testtest")
-			assert "Logged In" in rv.data
-
-
-
-		def test_pep8_conformance(self):
-			pep8style = pep8.StyleGuide(quiet=True)
-			result = pep8style.check_files([
-											'app.py',
-											'libs/__init.py',
-											'libs/auth.py',
-											'libs/javascriotlibs.py',
-											'libs/search.py',
-											'libs/themes.py',
-											'app_test.py'
-											])
-			self.assertEqual(
-							result.total_errors, 0,
-							"Found code style errors (and warnings)."
-							)
-
+	def test_change_pw(self):
+		rv = self.login("fhebert-perkins16", "password")
+		assert "Logged In" in rv.data
+		rv = self.app.post("/settings/personal",data=dict(
+			form_name="change_pw",
+			newpassword="testtest",
+			newpassword2="testtest",
+			oldpassword="password"
+		))
+		assert not "wrong password" in rv.data
+		assert not "passwords do not match" in rv.data
+		self.logout()
+		rv = self.login("fhebert-perkins16", "testtest")
+		assert "Logged In" in rv.data
+	def test_pep8_conformance(self):
+		pep8style = pep8.StyleGuide(quiet=True)
+		files = [
+				'app.py',
+				'libs/__init__.py',
+				'libs/auth.py',
+				'libs/javascriotlibs.py',
+				'libs/search.py',
+				'libs/themes.py',
+				'app_test.py'
+				]
+		errors = 0
+		for file in files:
+			fchecker = pep8.Checker(file, show_source=True)
+			errors += fchecker.check_all()
+		if errors != 0:
+			print("Found %s errors (and warnings)" % errors)
+		assert errors == 0
 if __name__ == "__main__":
 	try:
 		unittest.main()
@@ -188,6 +187,6 @@ if __name__ == "__main__":
 	cov.save()
 	# print "\n\nCoverage Report:\n"
 	# cov.report()
-	print "HTML version: " + "tmp/coverage/"
-	cov.html_report(directory='tmp/coverage/')
+	print "HTML version: " + "http://localhost"
+	cov.html_report(directory='/home/finley/tmp/coverage/')
 	cov.erase()

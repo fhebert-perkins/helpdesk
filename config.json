@@ -1,7 +1,8 @@
 {
-	"email_domains" : ["example.com"],
-	"email_server" : "localhost",
-	"email_port" : 25,
-	"email_username" : "username",
-	"email_password" : "password"
+	"email_server" : "mail.bayschoolsf.org",
+	"email_port" : 587,
+	"email_tls" : true,
+	"email_username" : "support@bayschoolsf.org",
+	"email_password" : "TB36#imp",
+	"email_default_subject" : "Bayschool Help Desk"
 }

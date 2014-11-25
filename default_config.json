@@ -1,0 +1,8 @@
+{
+	"email_server" : "localhost",
+	"email_port" : 25,
+	"email_tls" : false,
+	"email_username" : "email@domain.com",
+	"email_password" : "password",
+	"email_default_subject" : "Support Desk"
+}
